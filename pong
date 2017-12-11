@@ -108,11 +108,14 @@ while True:
             elif e.key == pygame.K_DOWN:
                 racket_speed[1] = 4
                 pass
-            elif e.key == pygame.K_z:
-            	racketClient1_speed[1] = -4
-            	pass
-            elif e.key == pygame.K_s:
-            	racketClient1_speed[1] = 4
+
+        elif e.type == pygame.KEYUP:
+            if e.key == pygame.K_UP:
+                racket_speed[1] = 0
+                pass
+            elif e.key == pygame.K_DOWN:
+                racket_speed[1] = 0
+                pass
         #else:
         #    print(e)
 
@@ -126,8 +129,12 @@ while True:
 
     # Move racket
     racket_coords = racket_coords.move(racket_speed)
+    print(racket_speed)
+
     s.send(bytes(racket_speed[1]))
+
     racketClient1_speed[1] = s.recv(1024)
+    print(racketClient1_speed)
     racketClient1_coords = racketClient1_coords.move(racketClient1_speed)
 
     # Clip racket on court
