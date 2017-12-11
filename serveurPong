@@ -2,17 +2,31 @@
 
 import socket
 import threading
+import pygame
 
 racket = ['Left', 'Right', 'Top', 'Bottom']
 
 
-def gestionClient(client, tabClient, racket):
+def acceptationClient(client, tabClient, racket):
 	#Donne sa raquette
 	empl = len(tabClient) -1
 	client.send(racket[empl])
 	print(racket[empl])
 
 	print('Got one connexion')
+
+def lancerPartie(client, tabClient):
+	# send start command
+	client.send(b'True')
+
+	#get the pos
+	speed = client.recv(1024)
+
+	# send the pos 	
+	tabClient.remove(client)
+	for i in tabClient:
+		i.send(speed)
+
 
 
 def main():
@@ -23,9 +37,12 @@ def main():
 
 	tabClient = []
 
-	for i in range (0,4):
+	for i in range (0,2):
 		client, addr = chaussette.accept()
 		tabClient.append(client)
-		threading.Thread(target=gestionClient, args=(client,tabClient,racket,)).start()
+		threading.Thread(target=acceptationClient, args=(client,tabClient,racket,)).start()
+	for i in range (0,2):
+		client = tabClient[i]
+		threading.Thread(target=lancerPartie, args=(client,tabClient,)).start()
 
 main()

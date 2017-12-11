@@ -31,16 +31,15 @@ import random
 import time
 
 def connect(serv):
-	while True:
-		try:
-			s.connect((sys.argv[1], 4243))
-			return 1
-		except:
-			timeSleep = random.randrange(1,10)
-			time.sleep(timeSleep)
-			pass
+    while True:
+        try:
+            s.connect((sys.argv[1], 4243))
+            return 1
+        except:
+            timeSleep = random.randrange(1,10)
+            time.sleep(timeSleep)
+            pass
 
-server = False
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # args and connection
@@ -50,7 +49,8 @@ else:
 	serv = sys.argv[1]
 	connect(serv)
 
-racketPos = s.recv(1024).decode('utf-8')
+# Get the player pos
+playerPos = s.recv(1024).decode('utf-8')
 
 # Screen setup
 
@@ -62,7 +62,7 @@ clay = (0xFF, 0x40, 0)
 ball_speed = [ -5, -5 ]
 racket_speed = [ 0, 0 ]
 
-racketClient_speed = [0, 0]
+racketClient1_speed = [0, 0]
 
 # Pygame initialization
 pygame.init()
@@ -74,17 +74,25 @@ ball_coords = ball.get_rect()
 
 racket = pygame.image.load("image/racket.png")
 racket_coords = racket.get_rect()
+racketClient1 = pygame.image.load("image/racket.png")
+racketClient1_coords = racketClient1.get_rect()
+racketClient1_coords.right = width -1
 
-racketClient = pygame.image.load("image/racket.png")
-racketClient_coords = racketClient.get_rect()
-racketClient_coords.right = width -1
-
+if playerPos == "Right":
+    racket = pygame.image.load("image/racket.png")
+    racket_coords = racket.get_rect()
+    racket_coords.right = width-1
+    racketClient1 = pygame.image.load("image/racket.png")
+    racketClient1_coords = racketClient1.get_rect()
 # Throw ball from center
 def throw():
     ball_coords.left = 2*width/3
     ball_coords.top = height/2
 
-throw()
+play = b'False'
+play = s.recv(1024)
+if play == b'True':
+    throw()
 
 while True:
     for e in pygame.event.get():
@@ -101,24 +109,10 @@ while True:
                 racket_speed[1] = 4
                 pass
             elif e.key == pygame.K_z:
-            	racketClient_speed[1] = -4
+            	racketClient1_speed[1] = -4
             	pass
             elif e.key == pygame.K_s:
-            	racketClient_speed[1] = 4
-
-        elif e.type == pygame.KEYUP:
-            if e.key == pygame.K_UP:
-                racket_speed[1] = 0
-                pass
-            elif e.key == pygame.K_DOWN:
-                racket_speed[1] = 0
-                pass
-            elif e.key == pygame.K_z:
-            	racketClient_speed[1] = 0
-            	pass
-            elif e.key == pygame.K_s:
-            	racketClient_speed[1] = 0
-
+            	racketClient1_speed[1] = 4
         #else:
         #    print(e)
 
@@ -132,7 +126,10 @@ while True:
 
     # Move racket
     racket_coords = racket_coords.move(racket_speed)
-    racketClient_coords = racketClient_coords.move(racketClient_speed)
+    s.send(bytes(racket_speed[1]))
+    racketClient1_speed[1] = s.recv(1024)
+    racketClient1_coords = racketClient1_coords.move(racketClient1_speed)
+
     # Clip racket on court
     if racket_coords.left < 0:
         racket_coords.left = 0
@@ -143,14 +140,14 @@ while True:
     elif racket_coords.bottom >= height:
         racket_coords.bottom = height-1
 
-    if racketClient_coords.left < 0:
-        racketClient_coords.left = 0
-    elif racketClient_coords.right >= width:
-        racketClient_coords.right = width-1
-    if racketClient_coords.top < 0:
-        racketClient_coords.top = 0
-    elif racketClient_coords.bottom >= height:
-        racketClient_coords.bottom = height-1
+    if racketClient1_coords.left < 0:
+        racketClient1_coords.left = 0
+    elif racketClient1_coords.right >= width:
+        racketClient1_coords.right = width-1
+    if racketClient1_coords.top < 0:
+        racketClient1_coords.top = 0
+    elif racketClient1_coords.bottom >= height:
+        racketClient1_coords.bottom = height-1
 
     # Racket reached racket position?
     if ball_coords.left <= 0:
@@ -158,7 +155,7 @@ while True:
             print("Perdu a gauche ;P")
             throw()
     if ball_coords.right >= width:
-    	if ball_coords.bottom <= racketClient_coords.top or ball_coords.top >= racketClient_coords.bottom:
+    	if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
     		print("Perdu a droite ;)")
     		throw()
 
@@ -166,7 +163,7 @@ while True:
     screen.fill(clay)
     screen.blit(ball, ball_coords)
     screen.blit(racket, racket_coords)
-    screen.blit(racketClient, racketClient_coords)
+    screen.blit(racketClient1, racketClient1_coords)
     pygame.display.flip()
 
     # sleep 10ms, since there is no need for more than 100Hz refresh :)
