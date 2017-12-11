@@ -21,18 +21,17 @@ def lancerPartie(client, tabClient):
 
 	#get the pos
 	speed = client.recv(1024)
-
-	# send the pos 	
+	print('affiche speed :', speed)
+	print(type(speed))
+	# send the pos 		
 	tabClient.remove(client)
 	for i in tabClient:
-		i.send(speed)
-
-
+		client.send(speed)
 
 def main():
 	racket = ['Left', 'Right', 'Top', 'Bottom']
 	chaussette = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	chaussette.bind(('127.0.0.1', 4243))
+	chaussette.bind(('127.0.0.1', 4242))
 	chaussette.listen(4)
 
 	tabClient = []
