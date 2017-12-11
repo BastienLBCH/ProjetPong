@@ -33,7 +33,7 @@ import time
 def connect(serv):
     while True:
         try:
-            s.connect((sys.argv[1], 4243))
+            s.connect((sys.argv[1], 4242))
             return 1
         except:
             timeSleep = random.randrange(1,10)
@@ -60,7 +60,7 @@ height = 600
 clay = (0xFF, 0x40, 0)
 
 ball_speed = [ -5, -5 ]
-racket_speed = [ 0, 0 ]
+racket_speed = [ 0, 2 ]
 
 racketClient1_speed = [0, 0]
 
@@ -128,12 +128,13 @@ while True:
         ball_speed[1] = -ball_speed[1]
 
     # Move racket
-    racket_coords = racket_coords.move(racket_speed)
-    print(racket_speed)
-
-    s.send(bytes(racket_speed[1]))
-
-    racketClient1_speed[1] = s.recv(1024)
+    racket_coords = racket_coords.move(racket_speed)    
+    v = str(racket_speed[1])
+    s.send(v)
+    v = s.recv(1024)
+    speed = int(v)
+    print(type(v))
+    racketClient1_speed[1] = speed
     print(racketClient1_speed)
     racketClient1_coords = racketClient1_coords.move(racketClient1_speed)
 
