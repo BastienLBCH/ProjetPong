@@ -3,6 +3,8 @@
 import socket
 import threading
 import pygame
+import time
+import sys
 
 racket = ['Left', 'Right', 'Top', 'Bottom']
 
@@ -18,20 +20,21 @@ def acceptationClient(client, tabClient, racket):
 def lancerPartie(client, tabClient):
 	# send start command
 	client.send(b'True')
-
-	#get the pos
-	speed = client.recv(1024)
-	print('affiche speed :', speed)
-	print(type(speed))
-	# send the pos 		
-	tabClient.remove(client)
-	for i in tabClient:
-		client.send(speed)
+	while True:
+		#get the pos
+		speed = client.recv(1024)
+		print 'affiche speed :', speed
+		print type(speed)
+		# send the pos 		
+		for i in tabClient:
+			if i != client:
+				i.send(speed)
+		pygame.time.delay(10)
 
 def main():
 	racket = ['Left', 'Right', 'Top', 'Bottom']
 	chaussette = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	chaussette.bind(('127.0.0.1', 4242))
+	chaussette.bind(('127.0.0.1', 4243))
 	chaussette.listen(4)
 
 	tabClient = []

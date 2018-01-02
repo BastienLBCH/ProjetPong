@@ -33,7 +33,7 @@ import time
 def connect(serv):
     while True:
         try:
-            s.connect((sys.argv[1], 4242))
+            s.connect((sys.argv[1], 4243))
             return 1
         except:
             timeSleep = random.randrange(1,10)
@@ -93,7 +93,6 @@ play = b'False'
 play = s.recv(1024)
 if play == b'True':
     throw()
-
 while True:
     for e in pygame.event.get():
         # Check for exit
@@ -131,11 +130,15 @@ while True:
     racket_coords = racket_coords.move(racket_speed)    
     v = str(racket_speed[1])
     s.send(v)
-    v = s.recv(1024)
-    speed = int(v)
-    print(type(v))
+    vClient = s.recv(1024)
+    print "Vitesse client : ", vClient
+    if vClient != '':
+        speed = int(vClient)
+    else:
+        speed = 0
+    print "Type speed : ", type(speed)
     racketClient1_speed[1] = speed
-    print(racketClient1_speed)
+    print "racketClient1_speed : ", racketClient1_speed
     racketClient1_coords = racketClient1_coords.move(racketClient1_speed)
 
     # Clip racket on court
