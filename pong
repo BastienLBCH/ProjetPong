@@ -29,6 +29,7 @@ import pygame
 import socket
 import random
 import time
+import signal   
 
 def connect(serv):
     while True:
@@ -40,6 +41,11 @@ def connect(serv):
             time.sleep(timeSleep)
             pass
 
+def fermerConnexion(signal, frame):
+    finDuGame = 'clientDisconnect'
+    s.send(finDuGame)
+    sys.exit(0)
+
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # args and connection
@@ -48,6 +54,9 @@ if len(sys.argv) != 2:
 else:
 	serv = sys.argv[1]
 	connect(serv)
+
+signal.signal(signal.SIGINT,fermerConnexion)
+
 
 # Get the player pos
 playerPos = s.recv(1024).decode('utf-8')

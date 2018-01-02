@@ -25,6 +25,9 @@ def lancerPartie(client, tabClient):
 		speed = client.recv(1024)
 		print 'affiche speed :', speed
 		print type(speed)
+		if speed == 'clientDisconnect':
+			client.close()
+			break
 		# send the pos 		
 		for i in tabClient:
 			if i != client:
