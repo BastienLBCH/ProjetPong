@@ -7,7 +7,7 @@ import time
 import sys
 
 racket = ['Left', 'Right', 'Top', 'Bottom']
-port = 4243
+port = 4242
 
 def acceptationClient(client, tabClient, racket):
 	#Donne sa raquette

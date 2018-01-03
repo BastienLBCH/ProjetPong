@@ -31,7 +31,7 @@ import random
 import time
 import signal
 
-port = 4243
+port = 4242
 
 def connect(serv, port):
     while True:
@@ -70,7 +70,7 @@ height = 600
 
 clay = (0xFF, 0x40, 0)
 
-ball_speed = [ -2, -2 ]
+ball_speed = [ -3, -3 ]
 racket_speed = [ 0, 2 ]
 
 racketClient1_speed = [0, 0]
@@ -202,12 +202,12 @@ while True:
     if playerPos == 'Left':
         if ball_coords.left <= 0:
             if ball_coords.bottom <= racket_coords.top or ball_coords.top >= racket_coords.bottom:
-                print("Perdu a gauche ;P")
+                print "Perdu a gauche ;P"
                 throw()
         if ball_coords.right >= width:
-        	if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
-        		print("Perdu a droite ;)")
-                throw()
+            if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
+        	print "Perdu a droite ;)"
+        	throw()
     #else:
     #    if ball_coords.left <= 0:
     #        if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
