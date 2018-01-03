@@ -29,12 +29,14 @@ import pygame
 import socket
 import random
 import time
-import signal   
+import signal
 
-def connect(serv):
+port = 4243
+
+def connect(serv, port):
     while True:
         try:
-            s.connect((sys.argv[1], 4243))
+            s.connect((sys.argv[1], port))
             return 1
         except:
             timeSleep = random.randrange(1,10)
@@ -42,7 +44,7 @@ def connect(serv):
             pass
 
 def fermerConnexion(signal, frame):
-    finDuGame = 'clientDisconnect'
+    finDuGame = 'clientDisconnect*'
     s.send(finDuGame)
     sys.exit(0)
 
@@ -53,7 +55,7 @@ if len(sys.argv) != 2:
 	print('Error, not expected arguments')
 else:
 	serv = sys.argv[1]
-	connect(serv)
+	connect(serv, port)
 
 signal.signal(signal.SIGINT,fermerConnexion)
 
@@ -68,7 +70,7 @@ height = 600
 
 clay = (0xFF, 0x40, 0)
 
-ball_speed = [ -5, -5 ]
+ball_speed = [ -2, -2 ]
 racket_speed = [ 0, 2 ]
 
 racketClient1_speed = [0, 0]
@@ -100,8 +102,9 @@ def throw():
 
 play = b'False'
 play = s.recv(1024)
-if play == b'True':
+if play == b'True' and playerPos == 'Left':
     throw()
+    #print 'received play'
 while True:
     for e in pygame.event.get():
         # Check for exit
@@ -126,28 +129,54 @@ while True:
                 pass
         #else:
         #    print(e)
+    if playerPos == "Left":
+        # Move ball
+        ball_coords = ball_coords.move(ball_speed)
+        # Bounce ball on walls
+        if ball_coords.left < 0 or ball_coords.right >= width:
+            ball_speed[0] = -ball_speed[0]
+        if ball_coords.top < 0 or ball_coords.bottom >= height:
+            ball_speed[1] = -ball_speed[1]
+        #print 'Ball coords left : ', ball_coords
 
-    # Move ball
-    ball_coords = ball_coords.move(ball_speed)
-    # Bounce ball on walls
-    if ball_coords.left < 0 or ball_coords.right >= width:
-        ball_speed[0] = -ball_speed[0]
-    if ball_coords.top < 0 or ball_coords.bottom >= height:
-        ball_speed[1] = -ball_speed[1]
+
+        #print 'sending ball coords'
+        coordsL = str(ball_coords.left) + '*'
+        coordsB = str(ball_coords.bottom) + '*'
+        #print coordsL, type(coordsL)
+        #print coordsT, type(coordsT)
 
     # Move racket
     racket_coords = racket_coords.move(racket_speed)    
     v = str(racket_speed[1])
-    s.send(v)
-    vClient = s.recv(1024)
-    print "Vitesse client : ", vClient
+    if playerPos == 'Left':
+        trame = coordsL + coordsB + v
+        s.send(trame)
+    else:
+        s.send(v)
+        #print 'sent speed'
+
+    if playerPos == 'Left':
+        vClient = s.recv(1024)
+    else:
+        #print 'waiting for ball coords...'
+        received = s.recv(1024).split('*')
+        #print 'Received : ', received
+        coordsL = received[0]
+        coordsB = received[1]
+        vClient = received[2]
+        ball_coords.left = int(coordsL) if coordsL != '' else 0
+        ball_coords.bottom = int(coordsB) if coordsB != '' else 0
+        #print 'Ball coords Right : ', ball_coords
+
+    #print "Vitesse client : ", vClient
     if vClient != '':
-        speed = int(vClient)
+        speed = int(vClient) if vClient != 'clientDisconnect' else 0
     else:
         speed = 0
-    print "Type speed : ", type(speed)
+    #print "Type speed : ", type(speed)
     racketClient1_speed[1] = speed
-    print "racketClient1_speed : ", racketClient1_speed
+    #print "racketClient1_speed : ", racketClient1_speed
     racketClient1_coords = racketClient1_coords.move(racketClient1_speed)
 
     # Clip racket on court
@@ -170,14 +199,24 @@ while True:
         racketClient1_coords.bottom = height-1
 
     # Racket reached racket position?
-    if ball_coords.left <= 0:
-        if ball_coords.bottom <= racket_coords.top or ball_coords.top >= racket_coords.bottom:
-            print("Perdu a gauche ;P")
-            throw()
-    if ball_coords.right >= width:
-    	if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
-    		print("Perdu a droite ;)")
-    		throw()
+    if playerPos == 'Left':
+        if ball_coords.left <= 0:
+            if ball_coords.bottom <= racket_coords.top or ball_coords.top >= racket_coords.bottom:
+                print("Perdu a gauche ;P")
+                throw()
+        if ball_coords.right >= width:
+        	if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
+        		print("Perdu a droite ;)")
+                throw()
+    #else:
+    #    if ball_coords.left <= 0:
+    #        if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
+    #            print("Perdu a gauche ;P")
+    #            throw()
+    #    if ball_coords.right >= width:
+    #        if ball_coords.bottom <= racket_coords.top or ball_coords.top >= racket_coords.bottom:
+    #            print("Perdu a droite ;)")
+    #            throw()
 
     # Display everything
     screen.fill(clay)

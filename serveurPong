@@ -7,7 +7,7 @@ import time
 import sys
 
 racket = ['Left', 'Right', 'Top', 'Bottom']
-
+port = 4243
 
 def acceptationClient(client, tabClient, racket):
 	#Donne sa raquette
@@ -17,37 +17,66 @@ def acceptationClient(client, tabClient, racket):
 
 	print('Got one connexion')
 
-def lancerPartie(client, tabClient):
+def lancerPartie(client, tabClient, ball):
 	# send start command
 	client.send(b'True')
+	print ball
 	while True:
-		#get the pos
-		speed = client.recv(1024)
-		print 'affiche speed :', speed
-		print type(speed)
-		if speed == 'clientDisconnect':
-			client.close()
-			break
+		if ball == True:
+			print 'before ball coords'
+			#ballLeft, ballTop, speed = client.recv(1024).split('*')
+			received = client.recv(2024).split('*')
+			if 'clientDisconnect' in received:
+				for i in tabClient:
+					i.close()
+				exit()
+			print 'Received : ', received
+			print 'after ball coords'
+			ballLeft = received[0]
+			ballBop = received[1]
+			speed = received[2]
+			trame = ballLeft + '*' + ballBop + '*' + speed
+		else:
+			speed = client.recv(1024)
+			print 'received client speed'
+			if speed == '':
+				speed = '0'
+			print 'affiche speed :', speed
+			print type(speed)
+			if speed == 'clientDisconnect':
+				for i in tabClient:
+					i.close()
+				break
+
+		
 		# send the pos 		
 		for i in tabClient:
 			if i != client:
-				i.send(speed)
-		pygame.time.delay(10)
+				if ball == True:
+					i.send(trame)
+				else:
+					i.send(speed)
 
-def main():
-	racket = ['Left', 'Right', 'Top', 'Bottom']
+		#pygame.time.delay(1000)
+
+def main(racket, port):
+	#racket = ['Left', 'Right', 'Top', 'Bottom']
 	chaussette = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	chaussette.bind(('127.0.0.1', 4243))
+	chaussette.bind(('127.0.0.1', port))
 	chaussette.listen(4)
 
 	tabClient = []
-
+	ball = False
 	for i in range (0,2):
 		client, addr = chaussette.accept()
 		tabClient.append(client)
 		threading.Thread(target=acceptationClient, args=(client,tabClient,racket,)).start()
 	for i in range (0,2):
 		client = tabClient[i]
-		threading.Thread(target=lancerPartie, args=(client,tabClient,)).start()
+		if i == 0:
+			ball = True
+		else:
+			ball = False
+		threading.Thread(target=lancerPartie, args=(client,tabClient,ball)).start()
 
-main()
+main(racket, port)
