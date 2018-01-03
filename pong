@@ -100,6 +100,8 @@ def throw():
     ball_coords.left = 2*width/3
     ball_coords.top = height/2
 
+print ball_coords
+
 play = b'False'
 play = s.recv(1024)
 if play == b'True' and playerPos == 'Left':
@@ -147,7 +149,7 @@ while True:
         #print coordsT, type(coordsT)
 
     # Move racket
-    racket_coords = racket_coords.move(racket_speed)    
+    racket_coords = racket_coords.move(racket_speed) 
     v = str(racket_speed[1])
     if playerPos == 'Left':
         trame = coordsL + coordsB + v
@@ -202,21 +204,19 @@ while True:
     if playerPos == 'Left':
         if ball_coords.left <= 0:
             if ball_coords.bottom <= racket_coords.top or ball_coords.top >= racket_coords.bottom:
-                print "Perdu a gauche ;P"
+                print "Perdu..."
                 throw()
         if ball_coords.right >= width:
             if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
-        	print "Perdu a droite ;)"
-        	throw()
-    #else:
-    #    if ball_coords.left <= 0:
-    #        if ball_coords.bottom <= racketClient1_coords.top or ball_coords.top >= racketClient1_coords.bottom:
-    #            print("Perdu a gauche ;P")
-    #            throw()
-    #    if ball_coords.right >= width:
-    #        if ball_coords.bottom <= racket_coords.top or ball_coords.top >= racket_coords.bottom:
-    #            print("Perdu a droite ;)")
-    #            throw()
+                print "Gagne !!!"
+                throw()
+    else:
+        if ball_coords.left <= 0:
+            if ball_coords.bottom <= racketClient1_coords.top or  ball_coords.top >= racketClient1_coords.bottom:
+                print "Gagne !!!!!"
+        if ball_coords.right >= width:
+            if ball_coords.bottom <= racket_coords.top or ball_coords.top >= racket_coords.bottom:
+                print "Perdu..."
 
     # Display everything
     screen.fill(clay)
